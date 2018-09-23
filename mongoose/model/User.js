@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const {SHA256} = require('crypto-js');
+const _ = require('lodash')
 
 
 
@@ -30,9 +31,18 @@ const userSchema = new mongoose.Schema({
     memberSince: {
         type: Number,
         default: Date.now()
+    },
+    verify:{
+        type:Boolean,
+        default:false
     }
 })
 
+userSchema.methods.toJSON = function () {
+    var user = this;
+    var userObject = user.toObject();
+    return _.pick(userObject, ['_id', 'email','firstName']);
+};
 
 userSchema.statics.passHash = (pass) => {
 
