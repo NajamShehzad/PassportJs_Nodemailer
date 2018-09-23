@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const {SHA256} = require('crypto-js');
 
 
 
-const userSchema = new  mongoose.Schema({
+const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
@@ -32,6 +33,14 @@ const userSchema = new  mongoose.Schema({
     }
 })
 
+
+userSchema.statics.passHash = (pass) => {
+
+    pass = SHA256(JSON.stringify(pass) + "123456").toString();
+    return pass
+
+}
+
 let User = mongoose.model('user', userSchema);
 
-module.exports = {User}
+module.exports = { User }

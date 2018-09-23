@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect('mongodb://localhost:27017/Project')
+mongoose.connect('mongodb://localhost:27017/Pasport')
     .then(x => {
         console.log("Database Connected");
     })
