@@ -1,7 +1,11 @@
 const { mongoose } = require('../mongoose/mongoose');
-const { User } = require('../mongoose/model/User');
+const { Users } = require('../mongoose/model/User');
 const nodemailer = require('nodemailer');
-const {user} =  require('../mailpass');
+const { user, jwtPass } = require('../config');
+const jwt = require('jsonwebtoken');
+const { SHA256 } = require('crypto-js');
+const { createMail } = require('../passport/nodemailer');
+
 
 const Transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -13,7 +17,7 @@ const Transporter = nodemailer.createTransport({
 
 let mailOptions = {
     from: '"Programmer" <programmerofkhi@gmail.com>', // sender address
-    to: 'najambutt195@gmail.com, najambutt195@gmail.com', // list of receivers
+    to: 'najambutt195@gmail.com', // list of receivers
     subject: 'Hello G', // Subject line
     text: 'Hello world?', // plain text body
     html: '<b>Hello world?</b>' // html body
@@ -37,13 +41,15 @@ module.exports = {
             email: req.body.email,
             password: req.body.password
         };
-        body.password = User.passHash(body.password);
 
-        let user = new User(body)
+        body.password = Users.passHash(body.password);
+        var token = jwt.sign({ email:req.body.email }, jwtPass);
+        body.signUptoken = token;
+        let user = new Users(body)
 
         user.save().then(x => {
 
-            Transporter.sendMail(mailOptions, (error, info) => {
+            Transporter.sendMail(createMail(x), (error, info) => {
                 if (error) {
                     return console.log(error);
                 }
@@ -52,7 +58,7 @@ module.exports = {
                 console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
             });
 
-            console.log(x);
+            // console.log(x);
             return res.send(x);
         }).catch(x => {
             console.log(x);
@@ -62,5 +68,58 @@ module.exports = {
     //signIn
     signIn: function (req, res) {
 
+        Users.findOne({
+            email: req.body.email
+        }, function (err, user) {
+            if (err) throw err;
+
+            if (!user) {
+                return res.status(403).send({ message: "username or Password is not correct" })
+            }
+
+
+            let pass = SHA256(JSON.stringify(req.body.password) + "123456").toString();
+
+            if (user.password !== pass) {
+                return res.status(403).send({ message: "username or Password is not correct" })
+            }
+
+            if (!user.verify) {
+                return res.status(401).send({ message: "Please Confirm Your Email Adress" })
+            }
+            var token = jwt.sign({ user }, jwtPass, {
+                expiresIn: 120 // in seconds
+            });
+
+            // console.log(user);
+            if (!user) {
+                res.send({ success: false, message: 'Authentication failed. User not found.' });
+            } else {
+                res.send({ user, token: 'JWT ' + token })
+            }
+        });
+    },
+    //Secure Route
+    content: function (req, res) {
+        res.send('working');
+    },
+    confirm: function (req, res) {
+        try {
+            decoded = jwt.verify(req.params.id, jwtPass)
+            // console.log(decoded);
+
+        } catch (err) {
+            return res.status(402).send({ message: 'invalid Token' })
+        }
+        Users.findOne({email:decoded.email}).then(x =>{
+            console.log(x);
+            x.verify = true;
+            Users.findByIdAndUpdate(x._id,{ $set: x }, { new: true }).then(x=>{
+                console.log(x);
+                res.redirect('/');
+
+            })
+        })
     }
+
 }

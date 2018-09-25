@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
     verify:{
         type:Boolean,
         default:false
+    },
+    signUptoken:{
+        type:String,
+        required:true
     }
 })
 
@@ -51,6 +55,6 @@ userSchema.statics.passHash = (pass) => {
 
 }
 
-let User = mongoose.model('user', userSchema);
+let Users = mongoose.model('user', userSchema);
 
-module.exports = { User }
+module.exports = { Users }
