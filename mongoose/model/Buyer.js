@@ -5,12 +5,11 @@ const _ = require('lodash')
 
 
 
-const userSchema = new mongoose.Schema({
+const buyerSchema = new mongoose.Schema({
     accountType:{
         type:String,
-        default:"Freelancer"
-    }
-    ,
+        default:"Buyer"
+    },
     firstName: {
         type: String,
         required: true,
@@ -44,22 +43,25 @@ const userSchema = new mongoose.Schema({
     signUptoken:{
         type:String,
         required:true
+    },
+    balance:{
+        default:0
     }
 })
 
-userSchema.methods.toJSON = function () {
+buyerSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
     return _.pick(userObject, ['_id', 'email','firstName','accountType']);
 };
 
-userSchema.statics.passHash = (pass) => {
+buyerSchema.statics.passHash = (pass) => {
 
     pass = SHA256(JSON.stringify(pass) + "123456").toString();
     return pass
 
 }
 
-let Freelancer = mongoose.model('user', userSchema);
+let Buyer = mongoose.model('buyer', buyerSchema);
 
-module.exports = { Freelancer }
+module.exports = { Buyer }

@@ -24,19 +24,41 @@ require('./passport/passport')(passport);
  * Routing Start From Here
 */
 
+
 //Index Page Request
 app.get('/',route.index);
-//SignUp Request
-app.post('/signUp',route.singnUp);
-//signIn Route
-app.post('/signIn',route.signIn);
-//Secure Content
+
+
+/**
+ * Routes For Freelancer SignUp /SignIn
+*/
+
+//SignUp Request for Freelancer
+app.post('/signUpFreelancer',route.singnUpFreelancer);
+//signIn Route for Freelancer
+app.post('/signInFreelancer',route.signInFreelancer);
+//To Confirm Freelancer Email Adress
+app.get('/confirmFreelancer/:id',route.confirmFreelancer);
+
+//END Freelancer SignUp/SignIn
+
+
+/**
+ * Routes For Buyer SignUp/SignIn
+*/
+
+//signUp Route For Buyer
+app.post('/signUpBuyer',route.signUpBuyer);
+//SignIn Route For buyer
+app.post('/signInBuyer',route.signInBuyer);
+//To Confirm Buyer Email Adress
+app.get("/confirmBuyer/:id",route.confirmBuyer)
+
+//END Buyer SignUp/SignIn
+
+
+//Secure Route 'Content'
 app.get('/content',passport.authenticate('jwt', { session: false }),route.content);
-//To Confirm your Email Adress
-app.get('/confirm/:id',route.confirm)
-
-
-
 
 
 
